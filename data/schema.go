@@ -62,6 +62,24 @@ func init() {
 		},
 	})
 
+	User.AddFieldConfig("item", &graphql.Field{
+		Type: Item,
+		Args: graphql.FieldConfigArgument{
+			"id": &graphql.ArgumentConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+		},
+		Resolve: func(p graphql.ResolveParams) interface{} {
+			if id, ok := p.Args["id"].(string); ok {
+				log.Println("finding item with id: ", id)
+				return database.GetItem(dbMap, id)
+			} else {
+				log.Println("[FATAL] Could not parse ID: ", p.Args["id"])
+				return database.GetItem(dbMap, "1")
+			}
+		},
+	})
+
 	query = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{

@@ -9,10 +9,26 @@ import (
 )
 
 type Item struct {
-	Id        string    `json:"id" db:"id"`
-	Name      string    `json:"name" db:"name"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	UpdateAt  time.Time `json:"updated_at" db:"updated_at"`
+	Id                 string    `json:"id" db:"id"`
+	Name               string    `json:"name" db:"name"`
+	PurchasePriceCents int       `json:"purchase_price_cents" db:"purchase_price_cents"`
+	SalePriceCents     int       `json:"sale_price_cents" db:"sale_price_cents"`
+	CreatedAt          time.Time `json:"created_at" db:"created_at"`
+	UpdateAt           time.Time `json:"updated_at" db:"updated_at"`
+}
+
+func GetItem(dbMap *gorp.DbMap, itemID string) interface{} {
+	item := Item{}
+	err := dbMap.SelectOne(&item, "SELECT * FROM items WHERE id=$1", itemID)
+	if err != nil {
+		if gorp.NonFatalError(err) {
+			log.Print("[WARN] Error when trying to select item (", itemID, "): ", err)
+		} else {
+			log.Fatal("[FATAL] Error when trying to select items (", itemID, "): ", err)
+		}
+	}
+
+	return item
 }
 
 func GetAllItems(dbMap *gorp.DbMap) []interface{} {

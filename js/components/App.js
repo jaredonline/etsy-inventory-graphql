@@ -2,10 +2,11 @@ import React from 'react';
 import Relay from 'react-relay';
 
 import ItemTable from './ItemTable';
+import ItemGrid from './ItemGrid';
 
 var AppComponent = React.createClass({
   getInitialState() {
-    return {grid: false};
+    return {grid: true};
   },
   toggleGrid() {
     this.setState({grid: !this.state.grid});
@@ -14,7 +15,7 @@ var AppComponent = React.createClass({
     var itemDisplay, gridToggleText;
     if (this.state.grid) {
         gridToggleText = "View as a list";
-        itemDisplay = <div />
+        itemDisplay = <ItemGrid key={this.props.me.id} user={this.props.me} />
     } else {
         gridToggleText = "View as a grid";
         itemDisplay = <ItemTable key={this.props.me.id} user={this.props.me} />
@@ -43,6 +44,7 @@ export default Relay.createContainer(AppComponent, {
         email
         items
         ${ItemTable.getFragment('user')}
+        ${ItemGrid.getFragment('user')}
       }
     `,
   },

@@ -4,9 +4,10 @@ import act   from 'accounting';
 
 class ItemTable extends React.Component {
     render() {
+        var url = "/item/" + this.props.item.id;
         return(
             <tr>
-                <td><a href="#">{this.props.item.name}</a></td>
+                <td><a href={url}>{this.props.item.name}</a></td>
                 <td>{act.formatMoney(this.props.item.sale_price_cents / 100, "")}</td>
                 <td>{act.formatMoney(this.props.item.purchase_price_cents / 100, "")}</td>
             </tr>
@@ -19,6 +20,7 @@ export default Relay.createContainer(ItemTable, {
         item: () => Relay.QL`
             fragment on Item {
                 name
+                id
                 sale_price_cents
                 purchase_price_cents
             }

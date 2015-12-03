@@ -3,7 +3,7 @@ import Relay from 'react-relay';
 
 import ItemTable from './ItemTable';
 
-class App extends React.Component {
+class AppComponent extends React.Component {
   render() {
     return (
       <div className="container">
@@ -21,7 +21,7 @@ class App extends React.Component {
   }
 }
 
-export default Relay.createContainer(App, {
+export default Relay.createContainer(AppComponent, {
   fragments: {
     me: () => Relay.QL`
       fragment on User {

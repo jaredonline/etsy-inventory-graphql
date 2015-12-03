@@ -43,6 +43,12 @@ func init() {
 		Name: "Item",
 		Fields: graphql.Fields{
 			"id": relay.GlobalIDField("Item", nil),
+			"raw_id": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) interface{} {
+					return p.Source.(database.Item).Id
+				},
+			},
 			"name": &graphql.Field{
 				Type: graphql.String,
 			},

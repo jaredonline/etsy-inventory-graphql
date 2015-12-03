@@ -4,7 +4,7 @@ import act   from 'accounting';
 
 class ItemTable extends React.Component {
     render() {
-        var url = "/item/" + this.props.item.id;
+        var url = "#item/" + this.props.item.raw_id;
         return(
             <tr>
                 <td><a href={url}>{this.props.item.name}</a></td>
@@ -20,7 +20,7 @@ export default Relay.createContainer(ItemTable, {
         item: () => Relay.QL`
             fragment on Item {
                 name
-                id
+                raw_id
                 sale_price_cents
                 purchase_price_cents
             }

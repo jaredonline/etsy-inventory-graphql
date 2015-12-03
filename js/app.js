@@ -1,27 +1,22 @@
 import 'babel/polyfill';
 
 import App from './components/App';
-import AppHomeRoute from './routes/AppHomeRoute';
+import ItemView from './components/ItemView';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Relay from 'react-relay';
 import { Route, Link, IndexRoute } from 'react-router';
 import { RelayRouter } from 'react-router-relay';
+import createBrowserHistory from 'history/lib/createBrowserHistory'
 
 const RootQueries = {
     me: () => Relay.QL` query { me } `
 };
 
-const routes = (
-    <Route
-        path="/"
-        component={App}
-        queries={RootQueries}
-    />
-);
-
-console.log(routes)
 
 ReactDOM.render((
-  <RelayRouter routes={routes} />
+    <RelayRouter>
+        <Route path="/" component={App} queries={RootQueries} />
+        <Route path="/item/:itemId" component={ItemView} queries={RootQueries} />
+    </RelayRouter>
 ), document.getElementById('root'));

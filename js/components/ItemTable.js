@@ -13,6 +13,7 @@ class ItemTable extends React.Component {
                             <th>Name</th>
                             <th>Sale Price</th>
                             <th>Purchase Price</th>
+                            <th>Potential Profit</th>
                         </tr>
                     </thead>
 

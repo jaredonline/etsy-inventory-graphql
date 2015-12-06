@@ -58,6 +58,15 @@ func init() {
 			"sale_price_cents": &graphql.Field{
 				Type: graphql.Int,
 			},
+			"potential_profit_cents": &graphql.Field{
+				Type: graphql.Int,
+				Resolve: func(p graphql.ResolveParams) interface{} {
+					if i, ok := p.Source.(database.Item); ok {
+						return i.CalcPotentialProfit()
+					}
+					return nil
+				},
+			},
 		},
 	})
 

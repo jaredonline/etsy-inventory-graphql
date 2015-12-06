@@ -49,3 +49,7 @@ func GetAllItems(dbMap *gorp.DbMap) []interface{} {
 
 	return items
 }
+
+func (i *Item) CalcPotentialProfit() interface{} {
+	return i.SalePriceCents - i.PurchasePriceCents - 1000 - ((i.SalePriceCents * 3) / 100)
+}

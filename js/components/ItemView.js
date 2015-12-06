@@ -7,7 +7,7 @@ class ItemView extends React.Component {
           <div className="container">
             <div className="row">
                 <div className="col-md-12">
-                    {this.props.me.item.name}
+                    <h1>{this.props.me.item.name}</h1>
                 </div>
             </div>
         </div>

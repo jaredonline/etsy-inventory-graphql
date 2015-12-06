@@ -7,16 +7,15 @@ import ReactDOM from 'react-dom';
 import Relay from 'react-relay';
 import { Route, Link, IndexRoute } from 'react-router';
 import { RelayRouter } from 'react-router-relay';
-import createBrowserHistory from 'history/lib/createBrowserHistory'
-
-const RootQueries = {
-    me: () => Relay.QL` query { me } `
-};
+import RootQuery from './queries/RootQuery';
 
 
 ReactDOM.render((
     <RelayRouter>
-        <Route path="/" component={App} queries={RootQueries} />
-        <Route path="/item/:itemId" component={ItemView} queries={RootQueries} />
+        <Route path="/" component={App} queries={RootQuery}>
+            <IndexRoute component={App} queries={RootQuery} prepareParams={() => ({mode: "list"})} />
+            <Route component={App} queries={RootQuery} path=":mode" />
+        </Route>
+        <Route path="/item/:itemId" component={ItemView} queries={RootQuery} />
     </RelayRouter>
 ), document.getElementById('root'));

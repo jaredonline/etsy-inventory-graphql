@@ -14,7 +14,7 @@ type Item struct {
 	PurchasePriceCents int       `json:"purchase_price_cents" db:"purchase_price_cents"`
 	SalePriceCents     int       `json:"sale_price_cents" db:"sale_price_cents"`
 	CreatedAt          time.Time `json:"created_at" db:"created_at"`
-	UpdateAt           time.Time `json:"updated_at" db:"updated_at"`
+	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func GetItem(dbMap *gorp.DbMap, itemID string) interface{} {
@@ -48,6 +48,23 @@ func GetAllItems(dbMap *gorp.DbMap) []interface{} {
 	}
 
 	return items
+}
+
+func NewItem(dbMap *gorp.DbMap, item *Item) interface{} {
+	item.CreatedAt = time.Now()
+	item.UpdatedAt = time.Now()
+	err := dbMap.Insert(item)
+	if err != nil {
+		if gorp.NonFatalError(err) {
+			log.Print("[WARN] Error when trying to insert new item (", item.Name, "): ", err)
+		} else {
+			log.Fatal("[FATAL] Error when trying to insert new item (", item.Name, ") ", err)
+		}
+	} else {
+		return GetItem(dbMap, item.Id)
+	}
+
+	return item
 }
 
 func (i *Item) CalcPotentialProfit() interface{} {

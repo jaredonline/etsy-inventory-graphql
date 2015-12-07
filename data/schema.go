@@ -111,19 +111,47 @@ func init() {
 	 * This is the type that will be the root of our mutations,
 	 * and the entry point into performing writes in our schema.
 	 */
-	//	mutationType := graphql.NewObject(graphql.ObjectConfig{
-	//		Name: "Mutation",
-	//		Fields: graphql.Fields{
-	//			// Add you own mutations here
-	//		},
-	//	})
+	mutation := graphql.NewObject(graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"newItem": &graphql.Field{
+				Type: Item,
+				Resolve: func(p graphql.ResolveParams) interface{} {
+					item := database.Item{}
+					if name, ok := p.Args["name"].(string); ok {
+						item.Name = name
+					}
+					if sale_price_cents, ok := p.Args["sale_price_cents"].(int); ok {
+						item.SalePriceCents = sale_price_cents
+					}
+					if purchase_price_cents, ok := p.Args["purchase_price_cents"].(int); ok {
+						item.PurchasePriceCents = purchase_price_cents
+					}
+
+					return database.NewItem(dbMap, &item)
+				},
+				Args: graphql.FieldConfigArgument{
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"purchase_price_cents": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+					"sale_price_cents": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+			},
+		},
+	})
 
 	/**
 	* Finally, we construct our schema (whose starting query type is the query
 	* type we defined above) and export it.
 	 */
 	Schema, err = graphql.NewSchema(graphql.SchemaConfig{
-		Query: query,
+		Query:    query,
+		Mutation: mutation,
 	})
 	if err != nil {
 		panic(err)

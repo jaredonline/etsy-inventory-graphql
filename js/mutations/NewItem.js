@@ -2,7 +2,7 @@ import Relay from 'react-relay';
 
 class NewItem extends Relay.Mutation {
     getMutation() {
-        return Relay.QL` mutation { newItem { edge { node } } } `
+        return Relay.QL` mutation { newItem  } `
     }
 
     getVariables() {
@@ -21,11 +21,7 @@ class NewItem extends Relay.Mutation {
                 me {
                     items(first: 20) {
                         edges {
-                            node {
-                                raw_id,
-                                id,
-                                name
-                            }
+                            node
                         }
                     }
                 }
@@ -58,17 +54,6 @@ class NewItem extends Relay.Mutation {
             }
         `,
 
-        me: () => Relay.QL`
-            {
-                fragment on User {
-                    items(first: 20) {
-                        edges {
-                            node
-                        }
-                    }
-                }
-            }
-        `,
     };
 }
 

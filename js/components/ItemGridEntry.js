@@ -3,7 +3,7 @@ import Relay from 'react-relay';
 
 class ItemTable extends React.Component {
     render() {
-        var imageSrc = "/images/" + this.props.item.raw_id + ".jpg";
+        var imageSrc = "/images/" + this.props.item.raw_id % 10 + ".jpg";
         var url = "#item/" + this.props.item.raw_id;
         return(
             <div className="card">
@@ -26,6 +26,7 @@ export default Relay.createContainer(ItemTable, {
                 raw_id
                 sale_price_cents
                 purchase_price_cents
+                potential_profit_cents
             }
         `,
     },

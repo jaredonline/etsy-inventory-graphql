@@ -3,14 +3,14 @@ import Relay from 'react-relay';
 
 import ItemGridEntry from './ItemGridEntry';
 
-class ItemTable extends React.Component {
+class ItemGrid extends React.Component {
     render() {
         return(
             <div className="col-md-12">
                 <div className="card-columns">
                     {
-                        this.props.user.items.map(function(item, index) {
-                            return <ItemGridEntry key={item.id} item={item} />
+                        this.props.user.items.edges.map(function(edge, index) {
+                            return <ItemGridEntry key={edge.node.id} item={edge.node} />
                         })
                     }
                 </div>
@@ -19,13 +19,14 @@ class ItemTable extends React.Component {
     }
 }
 
-export default Relay.createContainer(ItemTable, {
+export default Relay.createContainer(ItemGrid, {
     fragments: {
         user: () => Relay.QL`
             fragment on User {
-                items(first: 1) {
+                items(first: 20) {
                     edges {
                         node {
+                            id
                             ${ItemGridEntry.getFragment('item')}
                         }
                     }

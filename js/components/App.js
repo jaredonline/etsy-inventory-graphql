@@ -26,9 +26,15 @@ var AppComponent = React.createClass({
   handleFormSubmit(event) {
     event.preventDefault();
     Relay.Store.update(new NewItemMutation({item: this.state.newItem, me: null}));
+    this.setState({showForm: !this.state.showForm})
+  },
+  toggleForm(event) {
+    event.preventDefault();
+    this.setState({showForm: !this.state.showForm})
   },
   getInitialState() {
     return {
+        showForm: false,
         newItem: {
             name: "",
             purchase_price: "",
@@ -37,7 +43,7 @@ var AppComponent = React.createClass({
     }
   },
   render() {
-    var itemDisplay, mode, newItem;
+    var itemDisplay, mode, newItem, formDisplay;
     if (this.props.params.mode !== null && this.props.params.mode !== "" && this.props.params.mode !== undefined) {
         mode = this.props.params.mode;
     } else {
@@ -50,19 +56,20 @@ var AppComponent = React.createClass({
     }
 
     newItem = this.state.newItem;
+    formDisplay = (this.state.showForm === false) ? "none" : "inherit";
     return (
       <div className="container">
         <div className="row">
             <div className="col-md-8">
                 <h1>Item list ({this.props.me.items.edges.length})</h1>
-                <button className="btn btn-primary">New Item</button>
+                <button className="btn btn-primary" onClick={this.toggleForm}>New Item</button>
             </div>
             <div className="col-md-4">
                 <Link to="/grid" className="btn btn-primary" activeClassName="active">Grid</Link>
                 <Link to="/list" className="btn btn-primary" activeClassName="active">List</Link>
             </div>
         </div>
-        <div className="row">
+        <div className="row" style={{display: formDisplay}}>
             <form onSubmit={this.handleFormSubmit}>
                 <fieldset className="form-group">
                     <label htmlFor="itemName">Item Name</label>
@@ -96,6 +103,7 @@ export default Relay.createContainer(AppComponent, {
         items(first: 20) {
             edges
         }
+        ${ItemGrid.getFragment('user')}
         ${ItemTable.getFragment('user')}
       }
     `,

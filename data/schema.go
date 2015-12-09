@@ -23,11 +23,44 @@ var (
 	err error
 )
 
+type NewItemPayload struct {
+	ClientMutationId string        `json:"clientMutationId"`
+	Edge             ItemEdge      `json:"edge"`
+	Me               database.User `json:"me"`
+}
+
+type PageInfo struct {
+	HasPreviousPage bool `json:"hasPreviousPage"`
+	HasNextPage     bool `json:"hasNextPage"`
+}
+
+type ItemEdge struct {
+	Node   database.Item `json:"node"`
+	Cursor string        `json:"cursor"`
+}
+
+type ItemConnection struct {
+	Edges    []ItemEdge `json:"edges"`
+	PageInfo PageInfo   `json:"pageInfo"`
+}
+
 func init() {
 	dbMap, err = database.InitDB("development")
 	if err != nil {
 		log.Fatal("[FATAL] could not initialize db: ", err)
 	}
+
+	pageInfo := graphql.NewObject(graphql.ObjectConfig{
+		Name: "PageInfo",
+		Fields: graphql.Fields{
+			"hasPreviousPage": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.Boolean),
+			},
+			"hasNextPage": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.Boolean),
+			},
+		},
+	})
 
 	User = graphql.NewObject(graphql.ObjectConfig{
 		Name: "User",
@@ -70,10 +103,64 @@ func init() {
 		},
 	})
 
+	itemEdge := graphql.NewObject(graphql.ObjectConfig{
+		Name: "ItemEdge",
+		Fields: graphql.Fields{
+			"cursor": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"node": &graphql.Field{
+				Type: graphql.NewNonNull(Item),
+			},
+		},
+	})
+
+	itemConnection := graphql.NewObject(graphql.ObjectConfig{
+		Name: "ItemConnection",
+		Fields: graphql.Fields{
+			"edges": &graphql.Field{
+				Type: graphql.NewList(itemEdge),
+			},
+			"pageInfo": &graphql.Field{
+				Type: graphql.NewNonNull(pageInfo),
+			},
+		},
+	})
+
 	User.AddFieldConfig("items", &graphql.Field{
-		Type: graphql.NewList(Item),
+		Type: itemConnection,
+		Args: graphql.FieldConfigArgument{
+			"first": &graphql.ArgumentConfig{
+				Type: graphql.Int,
+			},
+			"after": &graphql.ArgumentConfig{
+				Type: graphql.String,
+			},
+			"last": &graphql.ArgumentConfig{
+				Type: graphql.Int,
+			},
+			"before": &graphql.ArgumentConfig{
+				Type: graphql.String,
+			},
+		},
 		Resolve: func(p graphql.ResolveParams) interface{} {
-			return database.GetAllItems(dbMap)
+			pageInfo := PageInfo{
+				HasPreviousPage: false,
+				HasNextPage:     false,
+			}
+			items := database.GetAllItems(dbMap)
+			edges := make([]ItemEdge, len(items))
+			for index, item := range items {
+				edges[index] = ItemEdge{
+					Node:   item,
+					Cursor: string(item.Id),
+				}
+			}
+
+			return ItemConnection{
+				PageInfo: pageInfo,
+				Edges:    edges,
+			}
 		},
 	})
 
@@ -107,6 +194,39 @@ func init() {
 		},
 	})
 
+	newItemInput := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name: "NewItemInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"purchasePriceCents": &graphql.InputObjectFieldConfig{
+				Type: graphql.Int,
+			},
+			"salePriceCents": &graphql.InputObjectFieldConfig{
+				Type: graphql.Int,
+			},
+			"clientMutationId": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+		},
+	})
+
+	newItemPayload := graphql.NewObject(graphql.ObjectConfig{
+		Name: "NewItemPayload",
+		Fields: graphql.Fields{
+			"me": &graphql.Field{
+				Type: graphql.NewNonNull(User),
+			},
+			"edge": &graphql.Field{
+				Type: graphql.NewNonNull(itemEdge),
+			},
+			"clientMutationId": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+		},
+	})
+
 	/**
 	 * This is the type that will be the root of our mutations,
 	 * and the entry point into performing writes in our schema.
@@ -115,30 +235,39 @@ func init() {
 		Name: "Mutation",
 		Fields: graphql.Fields{
 			"newItem": &graphql.Field{
-				Type: Item,
+				Type: newItemPayload,
 				Resolve: func(p graphql.ResolveParams) interface{} {
-					item := database.Item{}
-					if name, ok := p.Args["name"].(string); ok {
-						item.Name = name
-					}
-					if sale_price_cents, ok := p.Args["sale_price_cents"].(int); ok {
-						item.SalePriceCents = sale_price_cents
-					}
-					if purchase_price_cents, ok := p.Args["purchase_price_cents"].(int); ok {
-						item.PurchasePriceCents = purchase_price_cents
-					}
+					payload := NewItemPayload{}
+					edge := ItemEdge{}
+					if input, ok := p.Args["input"].(map[string]interface{}); ok {
+						item := database.Item{}
+						if name, ok := input["name"].(string); ok {
+							item.Name = name
+						}
+						if sale_price_cents, ok := input["salePriceCents"].(int); ok {
+							item.SalePriceCents = sale_price_cents
+						}
+						if purchase_price_cents, ok := input["purchasePriceCents"].(int); ok {
+							item.PurchasePriceCents = purchase_price_cents
+						}
+						if mutation_id, ok := input["clientMutationId"].(string); ok {
+							payload.ClientMutationId = mutation_id
+						}
 
-					return database.NewItem(dbMap, &item)
+						payload.Me = database.GetUser(dbMap, 1).(database.User)
+						edge.Node = database.NewItem(dbMap, &item).(database.Item)
+						edge.Cursor = string(edge.Node.Id)
+						payload.Edge = edge
+						log.Println(payload)
+
+						return payload
+					}
+					log.Println(p.Args)
+					return nil
 				},
 				Args: graphql.FieldConfigArgument{
-					"name": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.String),
-					},
-					"purchase_price_cents": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.Int),
-					},
-					"sale_price_cents": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(graphql.Int),
+					"input": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(newItemInput),
 					},
 				},
 			},

@@ -11,15 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151127222340) do
+ActiveRecord::Schema.define(version: 20151208162747) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "items", force: :cascade do |t|
     t.string   "name"
-    t.integer  "purchase_price_cents"
-    t.integer  "sale_price_cents"
+    t.integer  "purchase_price_cents", limit: 8
+    t.integer  "sale_price_cents",     limit: 8
     t.datetime "created_at"
     t.datetime "updated_at"
   end

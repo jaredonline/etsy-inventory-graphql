@@ -23,9 +23,12 @@ export default Relay.createContainer(ItemTable, {
     fragments: {
         user: () => Relay.QL`
             fragment on User {
-                items {
-                    id
-                    ${ItemGridEntry.getFragment('item')}
+                items(first: 1) {
+                    edges {
+                        node {
+                            ${ItemGridEntry.getFragment('item')}
+                        }
+                    }
                 }
             }
         `,

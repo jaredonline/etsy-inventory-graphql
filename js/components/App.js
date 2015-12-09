@@ -25,7 +25,7 @@ var AppComponent = React.createClass({
   },
   handleFormSubmit(event) {
     event.preventDefault();
-    Relay.Store.update(new NewItemMutation({item: this.state.newItem}));
+    Relay.Store.update(new NewItemMutation({item: this.state.newItem, me: null}));
   },
   getInitialState() {
     return {
@@ -54,7 +54,7 @@ var AppComponent = React.createClass({
       <div className="container">
         <div className="row">
             <div className="col-md-8">
-                <h1>Item list ({this.props.me.items.length})</h1>
+                <h1>Item list ({this.props.me.items.edges.length})</h1>
                 <button className="btn btn-primary">New Item</button>
             </div>
             <div className="col-md-4">
@@ -93,9 +93,10 @@ export default Relay.createContainer(AppComponent, {
       fragment on User {
         id
         email
-        items
+        items(first: 20) {
+            edges
+        }
         ${ItemTable.getFragment('user')}
-        ${ItemGrid.getFragment('user')}
       }
     `,
   },

@@ -2,11 +2,7 @@ import Relay from 'react-relay';
 
 class NewItem extends Relay.Mutation {
     getMutation() {
-        return Relay.QL`
-            mutation {
-                newItem
-            }
-        `
+        return Relay.QL` mutation { newItem { edge { node } } } `
     }
 
     getVariables() {
@@ -21,18 +17,59 @@ class NewItem extends Relay.Mutation {
 
     getFatQuery() {
         return Relay.QL`
-            fragment on Item {
-                id,
-                name,
-                purchase_price_cents,
-                sale_price_cents
+            fragment on NewItemPayload {
+                me {
+                    items(first: 20) {
+                        edges {
+                            node {
+                                raw_id,
+                                id,
+                                name
+                            }
+                        }
+                    }
+                }
             }
         `
     }
 
     getConfigs() {
-        return [];
+        return [
+            {
+                type: "RANGE_ADD",
+                parentName: "me",
+                parentID: "VXNlcjox",
+                connectionName: "items",
+                edgeName: "edge",
+                rangeBehaviors: {
+                    '': 'append',
+                },
+            }
+        ];
     }
+
+    static fragments = {
+        item: () => Relay.QL`
+            fragment on Item {
+                raw_id,
+                id,
+                purchase_price_cents,
+                sale_price_cents
+            }
+        `,
+
+        me: () => Relay.QL`
+            {
+                fragment on User {
+                    items(first: 20) {
+                        edges {
+                            node
+                        }
+                    }
+                }
+            }
+        `,
+    };
 }
 
 export default NewItem;

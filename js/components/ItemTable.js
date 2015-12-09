@@ -19,8 +19,8 @@ class ItemTable extends React.Component {
 
                     <tbody>
                         {
-                            this.props.user.items.map(function(item, index) {
-                                return <ItemTableRow key={item.id} item={item} />
+                            this.props.user.items.edges.map(function(edge, index) {
+                                return <ItemTableRow key={edge.node.id} item={edge.node} />
                             })
                         }
                     </tbody>
@@ -34,9 +34,13 @@ export default Relay.createContainer(ItemTable, {
     fragments: {
         user: () => Relay.QL`
             fragment on User {
-                items {
-                    id
-                    ${ItemTableRow.getFragment('item')}
+                items(first: 20) {
+                    edges {
+                        node {
+                            id
+                            ${ItemTableRow.getFragment('item')}
+                        }
+                    }
                 }
             }
         `,

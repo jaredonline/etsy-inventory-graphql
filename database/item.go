@@ -31,7 +31,7 @@ func GetItem(dbMap *gorp.DbMap, itemID string) interface{} {
 	return item
 }
 
-func GetAllItems(dbMap *gorp.DbMap) []interface{} {
+func GetAllItems(dbMap *gorp.DbMap) []Item {
 	var i []Item
 	_, err := dbMap.Select(&i, "SELECT * FROM items")
 	if err != nil {
@@ -42,12 +42,7 @@ func GetAllItems(dbMap *gorp.DbMap) []interface{} {
 		}
 	}
 
-	items := make([]interface{}, len(i))
-	for key, value := range i {
-		items[key] = value
-	}
-
-	return items
+	return i
 }
 
 func NewItem(dbMap *gorp.DbMap, item *Item) interface{} {

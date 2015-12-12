@@ -1,20 +1,22 @@
 import React from 'react';
 import Relay from 'react-relay';
 import act   from 'accounting';
+import {Link} from 'react-router';
 
 import Nav from './Nav';
 
 class ItemView extends React.Component {
     render() {
-        var item;
+        var item, editPath;
         item = this.props.me.item;
+        editPath = "/item/" + item.raw_id + "/edit";
         return(
             <div>
                 <Nav />
                 <div className="container">
                     <div className="row">
                         <div className="col-md-12">
-                            <h1>{item.name}</h1>
+                            <h1>{item.name} <Link to={editPath}>edit</Link></h1>
                             <table className="table">
                                 <thead>
                                     <tr>
@@ -82,7 +84,7 @@ class ItemView extends React.Component {
                                                 <tr key={provider.id}>
                                                     <td>{provider.name}</td>
                                                     <td>{act.formatMoney(provider.listing_fee_cents / 100, "")}</td>
-                                                    <td>{act.formatMoney(provider.percentage_fee_bp / 10, "%")}</td>
+                                                    <td>{act.formatMoney(provider.percentage_fee_bp / 10, "")}%</td>
                                                     <td>{act.formatMoney(percentageCents / 100, "")}</td>
                                                     <td>{act.formatMoney(provider.flat_fee_cents / 100, "")}</td>
                                                     <td>{act.formatMoney(total / 100, "")}</td>
@@ -106,6 +108,7 @@ export default Relay.createContainer(ItemView, {
             fragment on User {
                 item(id: $itemId) {
                     id
+                    raw_id
                     name
                     purchase_price_cents
                     sale_price_cents,

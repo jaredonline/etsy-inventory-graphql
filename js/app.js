@@ -8,6 +8,7 @@ import { Route, Link, IndexRoute } from 'react-router';
 
 import App from './components/App';
 import ItemView from './components/ItemView';
+import ItemEditView from './components/Item/Edit';
 import ShippingProfilesView from './components/ShippingProfilesView';
 
 import RootQuery from './queries/RootQuery';
@@ -21,5 +22,6 @@ ReactDOM.render((
             <Route component={App} queries={RootQuery} path=":mode" />
         </Route>
         <Route path="/item/:itemId" component={ItemView} queries={ItemViewQuery} />
+        <Route path="/item/:itemId/edit" component={ItemEditView} queries={RootQuery} />
     </RelayRouter>
 ), document.getElementById('root'));

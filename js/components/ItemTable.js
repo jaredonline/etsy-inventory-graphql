@@ -8,12 +8,13 @@ class ItemTable extends React.Component {
         return(
             <div className="col-md-12">
                 <table className="table table-hover">
-                    <thead className="thead-inverse">
+                    <thead>
                         <tr>
                             <th>Name</th>
                             <th>Sale Price</th>
                             <th>Purchase Price</th>
                             <th>Potential Profit</th>
+                            <th>Shipping Profile</th>
                         </tr>
                     </thead>
 

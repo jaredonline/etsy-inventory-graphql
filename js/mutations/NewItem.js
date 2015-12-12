@@ -12,6 +12,7 @@ class NewItem extends Relay.Mutation {
             name: item.name,
             purchasePriceCents: item.purchase_price,
             salePriceCents: item.sale_price,
+            shippingProfileId: item.shipping_profile,
         }
     }
 
@@ -50,7 +51,7 @@ class NewItem extends Relay.Mutation {
                 raw_id,
                 id,
                 purchase_price_cents,
-                sale_price_cents
+                sale_price_cents,
             }
         `,
 

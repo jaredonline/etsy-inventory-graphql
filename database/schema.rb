@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151208162747) do
+ActiveRecord::Schema.define(version: 20151212182903) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,6 +20,24 @@ ActiveRecord::Schema.define(version: 20151208162747) do
     t.string   "name"
     t.integer  "purchase_price_cents", limit: 8
     t.integer  "sale_price_cents",     limit: 8
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "shipping_profile_id"
+  end
+
+  create_table "payment_providers", force: :cascade do |t|
+    t.string   "name"
+    t.integer  "percentage_fee_bp", limit: 8
+    t.integer  "flat_fee_cents",    limit: 8
+    t.integer  "listing_fee_cents", limit: 8
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "shipping_profiles", force: :cascade do |t|
+    t.integer  "user_id"
+    t.string   "name"
+    t.integer  "cost_in_cents", limit: 8
     t.datetime "created_at"
     t.datetime "updated_at"
   end

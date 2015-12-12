@@ -9,12 +9,14 @@ import (
 )
 
 type Item struct {
-	Id                 string    `json:"id" db:"id"`
-	Name               string    `json:"name" db:"name"`
-	PurchasePriceCents int       `json:"purchase_price_cents" db:"purchase_price_cents"`
-	SalePriceCents     int       `json:"sale_price_cents" db:"sale_price_cents"`
-	CreatedAt          time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`
+	Id                 string           `json:"id" db:"id"`
+	Name               string           `json:"name" db:"name"`
+	PurchasePriceCents int              `json:"purchase_price_cents" db:"purchase_price_cents"`
+	SalePriceCents     int              `json:"sale_price_cents" db:"sale_price_cents"`
+	ShippingProfileId  int              `json:"shipping_profile_id" db:"shipping_profile_id"`
+	CreatedAt          time.Time        `json:"created_at" db:"created_at"`
+	UpdatedAt          time.Time        `json:"updated_at" db:"updated_at"`
+	ShippingProfile    *ShippingProfile `json:"shipping_profile" db:"-"`
 }
 
 func GetItem(dbMap *gorp.DbMap, itemID string) interface{} {
@@ -62,6 +64,35 @@ func NewItem(dbMap *gorp.DbMap, item *Item) interface{} {
 	return item
 }
 
-func (i *Item) CalcPotentialProfit() interface{} {
-	return i.SalePriceCents - i.PurchasePriceCents - 1000 - ((i.SalePriceCents * 3) / 100)
+func (i *Item) GetShippingProfile(dbMap *gorp.DbMap) *ShippingProfile {
+	if i.ShippingProfile != nil {
+		return i.ShippingProfile
+	}
+
+	profile := GetShippingProfile(dbMap, i.ShippingProfileId)
+	if p, ok := profile.(ShippingProfile); ok {
+		i.ShippingProfile = &p
+		return i.ShippingProfile
+	}
+	return nil
+}
+
+func (i *Item) CalcPotentialProfit(dbMap *gorp.DbMap) int {
+	var (
+		smallestProfit = 0
+		tmpProfit      = 0
+	)
+	providers := GetAllPaymentProviders(dbMap)
+	shippingProfile := i.GetShippingProfile(dbMap)
+	for _, provider := range providers {
+		tmpProfit = i.calcProfitForShippingAndPayment(provider, *shippingProfile)
+		if tmpProfit < smallestProfit || smallestProfit == 0 {
+			smallestProfit = tmpProfit
+		}
+	}
+	return smallestProfit
+}
+
+func (i *Item) calcProfitForShippingAndPayment(paymentProvider PaymentProvider, shipping ShippingProfile) int {
+	return i.SalePriceCents - i.PurchasePriceCents - shipping.CostInCents - ((i.SalePriceCents * paymentProvider.PercentageFeeBp) / 1000) - paymentProvider.FlatFeeCents - paymentProvider.ListingFeeCents
 }

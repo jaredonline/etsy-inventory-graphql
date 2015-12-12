@@ -11,6 +11,7 @@ class ItemTable extends React.Component {
                 <td>{act.formatMoney(this.props.item.sale_price_cents / 100, "")}</td>
                 <td>{act.formatMoney(this.props.item.purchase_price_cents / 100, "")}</td>
                 <td>{act.formatMoney(this.props.item.potential_profit_cents / 100, "")}</td>
+                <td>{this.props.item.shipping_profile.name}</td>
             </tr>
         );
     }
@@ -25,6 +26,9 @@ export default Relay.createContainer(ItemTable, {
                 sale_price_cents
                 purchase_price_cents
                 potential_profit_cents
+                shipping_profile {
+                    name
+                }
             }
         `,
     },

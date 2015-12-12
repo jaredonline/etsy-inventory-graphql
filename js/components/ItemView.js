@@ -56,6 +56,44 @@ class ItemView extends React.Component {
                             </table>
                         </div>
                     </div>
+                    <div className="row">
+                        <div className="col-md-12">
+                            <h2>Payment Provider Details</h2>
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Listing Fee</th>
+                                        <th>Percentage Fee</th>
+                                        <th>Percentage for this Item</th>
+                                        <th>Flat Fee</th>
+                                        <th>Total Fees</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {
+                                        this.props.payment_connection.edges.map(function(edge, index) {
+                                            var provider, percentageCents, total;
+                                            provider = edge.node;
+                                            percentageCents = item.sale_price_cents * (provider.percentage_fee_bp / 1000);
+                                            total = percentageCents + provider.listing_fee_cents + provider.flat_fee_cents;
+                                            return (
+                                                <tr key={provider.id}>
+                                                    <td>{provider.name}</td>
+                                                    <td>{act.formatMoney(provider.listing_fee_cents / 100, "")}</td>
+                                                    <td>{act.formatMoney(provider.percentage_fee_bp / 10, "%")}</td>
+                                                    <td>{act.formatMoney(percentageCents / 100, "")}</td>
+                                                    <td>{act.formatMoney(provider.flat_fee_cents / 100, "")}</td>
+                                                    <td>{act.formatMoney(total / 100, "")}</td>
+                                                </tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -75,6 +113,19 @@ export default Relay.createContainer(ItemView, {
                     shipping_profile {
                         name
                         cost_in_cents
+                    }
+                }
+            }
+        `,
+        payment_connection: () => Relay.QL`
+            fragment on PaymentProviderConnection {
+                edges {
+                    node {
+                        id
+                        name
+                        listing_fee_cents
+                        percentage_fee_bp
+                        flat_fee_cents
                     }
                 }
             }

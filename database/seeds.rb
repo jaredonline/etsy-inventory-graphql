@@ -16,7 +16,7 @@ User.create(:email => "jared.online@gmail.com")
 ShippingProfile.create(:user_id => 1, :cost_in_cents => 1_000, :name => "Basic shipping")
 ShippingProfile.create(:user_id => 1, :cost_in_cents => 10_000, :name => "Upgraded shipping")
 
-PaymentProvider.create(:name => "PayPal", :listing_fee_cents => 0, :percentage_fee_bp => 25, :flat_fee_cents => 25)
+PaymentProvider.create(:name => "PayPal", :listing_fee_cents => 20, :percentage_fee_bp => 25, :flat_fee_cents => 25)
 PaymentProvider.create(:name => "Etsy", :listing_fee_cents => 20, :percentage_fee_bp => 20, :flat_fee_cents => 0)
 
 Item.create(:name => "Super awesome ring", :sale_price_cents => 100_000, :purchase_price_cents => 1_000, :shipping_profile_id => 1)

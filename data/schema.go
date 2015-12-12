@@ -16,6 +16,7 @@ var (
 	User            *graphql.Object
 	Item            *graphql.Object
 	ShippingProfile *graphql.Object
+	PaymentProvider *graphql.Object
 
 	Schema graphql.Schema
 
@@ -56,6 +57,16 @@ type ShippingProfileConnection struct {
 	PageInfo PageInfo              `json:"pageInfo"`
 }
 
+type PaymentProviderEdge struct {
+	Node   database.PaymentProvider `json:"node"`
+	Cursor string                   `json:"cursor"`
+}
+
+type PaymentProviderConnection struct {
+	Edges    []PaymentProviderEdge `json:"edges"`
+	PageInfo PageInfo              `json:"pageInfo"`
+}
+
 func init() {
 	dbMap, err = database.InitDB("development")
 	if err != nil {
@@ -80,6 +91,25 @@ func init() {
 			"id": relay.GlobalIDField("User", nil),
 			"email": &graphql.Field{
 				Type: graphql.String,
+			},
+		},
+	})
+
+	PaymentProvider = graphql.NewObject(graphql.ObjectConfig{
+		Name: "PaymentProvider",
+		Fields: graphql.Fields{
+			"id": relay.GlobalIDField("User", nil),
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"listing_fee_cents": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"percentage_fee_bp": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"flat_fee_cents": &graphql.Field{
+				Type: graphql.Int,
 			},
 		},
 	})
@@ -197,6 +227,30 @@ func init() {
 		},
 	})
 
+	paymentEdge := graphql.NewObject(graphql.ObjectConfig{
+		Name: "PaymentProviderEdge",
+		Fields: graphql.Fields{
+			"cursor": &graphql.Field{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"node": &graphql.Field{
+				Type: graphql.NewNonNull(PaymentProvider),
+			},
+		},
+	})
+
+	paymentProviderConnection := graphql.NewObject(graphql.ObjectConfig{
+		Name: "PaymentProviderConnection",
+		Fields: graphql.Fields{
+			"edges": &graphql.Field{
+				Type: graphql.NewList(paymentEdge),
+			},
+			"pageInfo": &graphql.Field{
+				Type: graphql.NewNonNull(pageInfo),
+			},
+		},
+	})
+
 	User.AddFieldConfig("items", &graphql.Field{
 		Type: itemConnection,
 		Args: graphql.FieldConfigArgument{
@@ -296,6 +350,42 @@ func init() {
 				Type: User,
 				Resolve: func(p graphql.ResolveParams) interface{} {
 					return database.GetUser(dbMap, 1)
+				},
+			},
+			"payment_connection": &graphql.Field{
+				Type: paymentProviderConnection,
+				Args: graphql.FieldConfigArgument{
+					"first": &graphql.ArgumentConfig{
+						Type: graphql.Int,
+					},
+					"after": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+					"last": &graphql.ArgumentConfig{
+						Type: graphql.Int,
+					},
+					"before": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) interface{} {
+					pageInfo := PageInfo{
+						HasPreviousPage: false,
+						HasNextPage:     false,
+					}
+					providers := database.GetAllPaymentProviders(dbMap)
+					edges := make([]PaymentProviderEdge, len(providers))
+					for index, provider := range providers {
+						edges[index] = PaymentProviderEdge{
+							Node:   provider,
+							Cursor: string(provider.Id),
+						}
+					}
+
+					return PaymentProviderConnection{
+						PageInfo: pageInfo,
+						Edges:    edges,
+					}
 				},
 			},
 		},

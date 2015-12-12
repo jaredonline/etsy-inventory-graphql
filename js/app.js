@@ -11,7 +11,7 @@ import ItemView from './components/ItemView';
 import ShippingProfilesView from './components/ShippingProfilesView';
 
 import RootQuery from './queries/RootQuery';
-
+import ItemViewQuery from './queries/ItemViewQuery';
 
 ReactDOM.render((
     <RelayRouter>
@@ -20,6 +20,6 @@ ReactDOM.render((
             <IndexRoute component={App} queries={RootQuery} prepareParams={() => ({mode: "list"})} />
             <Route component={App} queries={RootQuery} path=":mode" />
         </Route>
-        <Route path="/item/:itemId" component={ItemView} queries={RootQuery} />
+        <Route path="/item/:itemId" component={ItemView} queries={ItemViewQuery} />
     </RelayRouter>
 ), document.getElementById('root'));
